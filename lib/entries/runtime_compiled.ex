@@ -1,4 +1,25 @@
 defmodule RuntimeCompiled do
+  @moduledoc """
+  Many ideas from what has been tried at https://github.com/gunnarmorling/1brc/discussions/93
+  Special mentions to @jesperes and @onno-vos-dev for their erlang contributions, I have learned a lot from them.
+
+  Ofc, thanks to @IceDragon200 who started the whole conversation and has been running the benchmarks.
+
+  The main new idea here is to generate a splitter based on the input file at run time, so we
+  end up with something like
+
+  def split_lines(<<"city1", ?;, ...>>) ...
+  def split_lines(<<"city2", ?;, ...>>) ...
+  ...
+
+  This is a very naive implementation, but it's already faster than the previous ones I had.
+  I'm sure that there is room for improvement in the parser but I see no point in working on it now.
+  At any given time, on my machine the producer process has ~16 messages in the queue, so improvements should probably happen there instead...
+
+
+  Note: The `Code.compile_string` part is quite cursed, I do not reccomend anyone to actually do this in real life.
+  Note2: It was more fun to code than an average macro, though.
+  """
   @measurement_file "./data/measurements.txt"
 
   @workers_count :erlang.system_info(:schedulers_online)
@@ -6,7 +27,7 @@ defmodule RuntimeCompiled do
 
   defmodule CityMatcher do
     @moduledoc """
-    This module must be recompiled at runtime, based on the input file.
+    This module must be re-compiled at runtime, based on the input file.
     The functions are generated based on the cities actually found.
     """
     def process_lines(_), do: raise("Not implemented")
